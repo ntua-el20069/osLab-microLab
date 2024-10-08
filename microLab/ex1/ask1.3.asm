@@ -33,8 +33,8 @@ move_right:
        
 
    wait_x_msec:
-   ldi r24,0xD0
-   ldi r25,0x07  ;r25:r24 2000 dec=0x07D0
+   ldi r24,0xE8
+   ldi r25,0x03 ;r25:r24 1000 dec=0x03E8 hex
   loop:
     rcall delay_inner ; 3 cycles + 15993 cycles =15996 cycles
     sbiw r24,1    ; 2 cycles
