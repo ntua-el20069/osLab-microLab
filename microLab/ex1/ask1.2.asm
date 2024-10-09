@@ -24,8 +24,8 @@ ldi counter, 0x0
 ldi total, 0x6
     
 ser temp	    ; temp = 0xFF
-OUT DDRB, temp	    ; POTRB as output
-OUT DDRC, temp	    ; PORTC as output
+OUT DDRD, temp	    ; POTRD as output
+
 
 LOOP:
     
@@ -60,8 +60,9 @@ LOOP:
     
     
     ; make them show in PORTS
-    OUT PORTB, f0
-    OUT PORTC, f1
+    OUT PORTD, f0
+    nop		    
+    OUT PORTD, f1
     nop
     
     
