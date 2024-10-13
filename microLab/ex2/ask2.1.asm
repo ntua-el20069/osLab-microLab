@@ -32,7 +32,7 @@ reset:
 ; jobs to enable interrupts
     ldi r24, (1 << ISC11) | (1 << ISC10)    ; INT1 rising edge
     sts EICRA, r24
-    ldi r24, (1 << INT0)
+    ldi r24, (1 << INT1)
     out EIMSK, r24
     
     sei
