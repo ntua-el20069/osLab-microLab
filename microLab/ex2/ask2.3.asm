@@ -16,8 +16,8 @@ rjmp reset
 rjmp ISR1
     
 ISR1:	; Interrupt Service Routine for INT1
-    sei	// enable interrupts again
     ; TODO handle renew or other phenomena
+    sei	// enable interrupts again
     ; handle led
     cpi active, 0
     breq next		    ; if active = 0 (not in interruption this time) 
@@ -33,6 +33,7 @@ ISR1:	; Interrupt Service Routine for INT1
     
     next:
     ldi temp, 0x01  ; only PB0 on
+    out PORTB, temp
     ldi active, 1
     
     loop:	; wait counter times * 0.5 sec =  (10 * 0.5 sec) = 5 sec
@@ -59,14 +60,14 @@ reset:
     out SPH, r24
     
 ; init PORTB as output
-    ser r26
-    out DDRB, r26
+    ser temp
+    out DDRB, temp
 
     ; some initializations
     ldi active, 0	; active = 0 (not in interruption)
     ldi reverse_time_counter, 10    ; (counter for interrupts) t = 10*0.5 = 5 sec
     clr temp		; PORTB off (initialize)
-    out DDRB, temp	; show in port B
+    out PORTB, temp	; show in port B
 
     
 ; jobs to enable interrupts
