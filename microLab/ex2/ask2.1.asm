@@ -56,7 +56,7 @@ loop2:
     
 ; instruction service routine for INT1
 ISR1:		    
-    ldi r24, (0 << INTF1)   ; make EIFR for INT1 zero 
+    ldi r24, (1 << INTF1)   ; make EIFR for INT1 zero 
     out EIFR, r24	    
     
     ldi r24, low(FOSC_MHZ*5)
@@ -70,7 +70,7 @@ ISR1:
     brne ISR1
     
     
-    in r16, PORTD
+    in r16, PIND
     andi r16, 0x20	    ; and with 0b 0010 0000 to get PD5
     cpi r16, 0x0	    ; if PD5 = 0 (pushed) then 
     breq isr_end		    ; do not increment int_counter (got to isr_end)
