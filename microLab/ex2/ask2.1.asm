@@ -55,7 +55,10 @@ loop2:
 
     
 ; instruction service routine for INT1
-ISR1:		    
+ISR1:	
+    push r24
+    push r25
+    routine_start:
     ldi r24, (1 << INTF1)   ; make EIFR for INT1 zero 
     out EIFR, r24	    
     
@@ -67,7 +70,7 @@ ISR1:
     in r24, EIFR
     andi r24, (1 << INTF1)
     cpi r24, 0x0
-    brne ISR1
+    brne routine_start
     
     
     in r16, PIND
@@ -79,7 +82,11 @@ ISR1:
     andi int_counter, 0x3F  ; andi 0b 0011 1111  is like (mod 64)
     out PORTC, int_counter  ; TODO output to PORTC
     
+
+    
     isr_end:
+    pop r25
+    pop r24
     reti
     
     
