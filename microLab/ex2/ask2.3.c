@@ -11,7 +11,7 @@ int flag=0;
 
 ISR (INT1_vect) {
     sei(); // enable interrupts again
-     if(active==1 && flag==1){ _delay_ms(500); return;}// all leds should light up for 500ms}
+     if(active==1 && flag==1){ return;}// all leds should light up for 500ms}
     if (active == 1) { //anameno to 1 LED
         t = 10; // renew time...
         
