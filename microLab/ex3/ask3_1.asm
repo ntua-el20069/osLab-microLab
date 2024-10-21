@@ -1,4 +1,5 @@
 .include "m328PBdef.inc"
+.def index=r22
 .equ freq=16
 .equ DELAY=500  ;delay (msec)
 .equ TOTAL=freq*DELAY  
@@ -6,72 +7,68 @@
  .dseg                     ;RAM MEMORY
  DC_VALUE : .byte 1 
    
-    
-table: .db 0x05, 0x1a, 0x2e , 0x43, 0x57, 0x6c , 0x80, 0x94, 0xa9, 0xbd ,0xd2, 0xe6 ,0xfb 
-  ; duty cycle values
  
 .cseg                      ;FLASH MEMORY 
-.org 0x00
- rjmp reset
+table: .dw 0x05, 0x1a, 0x2e ,0x43, 0x57, 0x6c ,0x80, 0x94, 0xa9, 0xbd ,0xd2, 0xe6 ,0xfb ; duty cycle values
+
  
 reset:
     
-  ldi Zh, HIGH(table) 
-  ldi Zl, LOW(table)
-  ldi r22,6                ;index for table
-  ldi r24 ,0x80    
-  sts DC_VALUE,r24         ;50% duty cycle
+  ldi r31, HIGH(table*2) ; initialize z to table address. 
+  ldi r30, LOW(table*2)  ; x2 for byte access
+  adiw r30,6             ; z has the address of 0x80 
+  ldi index,6            ;index for table
+  lpm r24 ,z             ; load the context of z address to r24 
+  sts DC_VALUE,r24       ;50% duty cycle 0x80
+  clr r25
+  sts OCR1AH,r25
+  sts OCR1AL, r24         ;OCR1A initialized to 0x80
   ldi r24,(1<<WGM10)|(1<<COM1A1)  
   sts TCCR1A,r24           ;Fast PWM not inverse output PB1
   
   ldi r24,(1<<CS12) |(0<<CS11) |(0<<CS10) 
   sts TCCR1B,r24         ;Frequency CLK/256=625000Hz
 
- 
-  ldi r24,2
-  out DDRB,r24   ;PB1 as output
+  ser r24
+  out DDRB,r24   ;PB as output
   
   clr r24
   out PORTB,r24 ;PORTB off
   out DDRD,r24  ;PORTD as input
   
-  sts OCR1AH,r24
-  
-  ldi r24, 126
-  sts OCR1AL, r24
-  
+    
   start:
   ldi r24,LOW(TOTAL)
   ldi r25,HIGH(TOTAL)
   rcall delay_thousand_cycles      ;delay 0,5sec
   
-  in r24, PORTD
+  in r20, PIND
   
-  cpi r24,0b11101111               ;if equal ,PD4 pushed
+  cpi r20,0b11101111               ;if equal ,PD4 pushed
   breq decrease
   
-  cpi r24,0b11110111               ;if equal PD3 pushed
+  cpi r20,0b11110111               ;if equal PD3 pushed
   breq increase
   
   rjmp start
   
   increase:
-   cpi r22,12
-   breq start                   ;limit of 98%
-   inc r22                      ;index of next element
-   adiw z,1                     ; store z the address of next element
-   ld r21,z                    ; load next element in r21
+   cpi index,12
+   breq start                    ;limit of 98%
+   inc index                    ;index of next element
+   adiw r30,1                     ; store z the address of next element
+   lpm r21,z                    ; load next element in r21
    sts DC_VALUE,r21            ;store next element in DC_VALUE
    sts OCR1AL,r21               ; store next element in OCRIAL 
    rjmp start
    
    decrease:
-   cpi r22,0
+   cpi index,0
    breq start                   ;limit of 2%
-   dec r22                      ;index of previous element  
-   sbiw z,1                     ;store z the address of previous element
-   ld r21,z                     ;load previous element in r21
-   sts DC_VALUE,r21            ;store next element in DC_VALUE
+   dec index                      ;index of previous element  
+   sbiw r30,1                     ;store z the address of previous element
+   lpm r21,z                     ;load previous element in r21
+   sts DC_VALUE,r21              ;store next element in DC_VALUE
    sts OCR1AL,r21               ;store previous element in OCRIAL
    rjmp start
   
