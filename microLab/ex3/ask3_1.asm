@@ -9,29 +9,30 @@
    
  
 .cseg                      ;FLASH MEMORY 
-table: .dw 0x05, 0x1a, 0x2e ,0x43, 0x57, 0x6c ,0x80, 0x94, 0xa9, 0xbd ,0xd2, 0xe6 ,0xfb ; duty cycle values
+table: .dw 0x0005, 0x001a, 0x002e ,0x0043, 0x0057, 0x006c ,0x0080, 0x0094, 0x00a9, 0x00bd ,0x00d2, 0x00e6 ,0x00fb ; duty cycle values
 
  
 reset:
     
   ldi r31, HIGH(table*2) ; initialize z to table address. 
   ldi r30, LOW(table*2)  ; x2 for byte access
-  adiw r30,6             ; z has the address of 0x80 
+  adiw r30,12             ; z has the address of 0x80 
   ldi index,6            ;index for table
-  lpm r24 ,z             ; load the context of z address to r24 
-  sts DC_VALUE,r24       ;50% duty cycle 0x80
+  lpm r29 ,z             ; load the context of z address to r24 
+  sts DC_VALUE,r29       ;50% duty cycle 0x80
   clr r25
   sts OCR1AH,r25
-  sts OCR1AL, r24         ;OCR1A initialized to 0x80
+  sts OCR1AL, r29         ;OCR1A initialized to 0x80
   ldi r24,(1<<WGM10)|(1<<COM1A1)  
   sts TCCR1A,r24           ;Fast PWM not inverse output PB1
   
-  ldi r24,(1<<CS12) |(0<<CS11) |(0<<CS10) 
+  ldi r24,(1<<CS12) |(1<<WGM12) 
   sts TCCR1B,r24         ;Frequency CLK/256=625000Hz
 
   ser r24
   out DDRB,r24   ;PB as output
-  
+  out DDRC,r24 
+  out PORTC,index
   clr r24
   out PORTB,r24 ;PORTB off
   out DDRD,r24  ;PORTD as input
@@ -56,20 +57,23 @@ reset:
    cpi index,12
    breq start                    ;limit of 98%
    inc index                    ;index of next element
-   adiw r30,1                     ; store z the address of next element
-   lpm r21,z                    ; load next element in r21
-   sts DC_VALUE,r21            ;store next element in DC_VALUE
-   sts OCR1AL,r21               ; store next element in OCRIAL 
+   adiw r30,2                     ; store z the address of next element
+   lpm r29,z     
+   ; load next element in r21
+   out PORTC,r29
+   sts DC_VALUE,r29            ;store next element in DC_VALUE
+   sts OCR1AL,r29             ; store next element in OCRIAL 
    rjmp start
    
    decrease:
    cpi index,0
    breq start                   ;limit of 2%
    dec index                      ;index of previous element  
-   sbiw r30,1                     ;store z the address of previous element
-   lpm r21,z                     ;load previous element in r21
-   sts DC_VALUE,r21              ;store next element in DC_VALUE
-   sts OCR1AL,r21               ;store previous element in OCRIAL
+   sbiw r30,2                     ;store z the address of previous element
+   lpm r29,z  ;load previous element in r21
+   out PORTC,r29
+   sts DC_VALUE,r29              ;store next element in DC_VALUE
+   sts OCR1AL,r29               ;store previous element in OCRIAL
    rjmp start
   
   
