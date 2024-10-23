@@ -51,18 +51,15 @@ void check_pwm(){
     if(( PINB & (1 << PB5)) == 0) {    // if PINB5 pushed
         while(( PINB & (1 << PB5)) == 0) _delay_ms(10);  // wait until released
         index = safe_incr(index);                        // increment index for duty cycle
-        PORTD |= (1 << PD7);  // for debugging
-        _delay_ms(50);
+        PORTD |= (1 << PD7);  // for debugging (because of delay 100 ms in main it is visible)
     }
     
     if(( PINB & (1 << PB4)) == 0) {    
         while(( PINB & (1 << PB4)) == 0) _delay_ms(10);
         index = safe_dec(index);                                    
         PORTD |= (1 << PD6);  // for debugging
-        _delay_ms(50);
     }
     
-    //PORTD = (PORTD & 0b00111111);      // clear PD[7:6] (debug bits)
     
     OCR1AL = table[index];      // modify duty cycle
 
