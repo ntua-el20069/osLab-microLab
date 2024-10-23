@@ -108,7 +108,7 @@ void main(void) {
                      if( (status & (1<<PD3))== 0) //PD3 pushed
                {   index=safe_incr(index);
                    OCR1AL=table[index];
-                   _delay_ms(10);
+                   _delay_ms(100);
            
                                 }
                    
@@ -116,7 +116,7 @@ void main(void) {
                if((status & (1<<PD4))== 0 ){ //PD4 pushed
                    index=safe_dec(index);
                    OCR1AL=table[index];
-                   _delay_ms(10);
+                   _delay_ms(100);
                
                
                }
