@@ -25,7 +25,7 @@ void mode_1(){
         {
                   index=safe_incr(index);
                    OCR1AL=table[index];
-                   _delay_ms(500);
+                   _delay_ms(600);
         }
         
         else {      if( (flag & (1<<PD4)  ) == 0)  //PD4 pushed
@@ -72,7 +72,7 @@ void mode_2(){
 void main(void) {
     
     TCCR1A=(1<<WGM10)|(1<<COM1A1); // fast PWM ,output PB1 
-    TCCR1B=(1<<CS12)|(1<<WGM12); //frequency 62500Hz
+    TCCR1B=(1<<CS12); //frequency 62500Hz
 
     DDRB=0b00000010;  //PB1 output
     DDRD=0x00;        //PORTD input
@@ -98,30 +98,33 @@ void main(void) {
     
    
          else{
-         if(mode == 2) mode_2();
          
-           else{ 
-               
-               if(mode == 1) mode_1();
-               else{
-                   
-                     if( (status & (1<<PD3))== 0) //PD3 pushed
+        if( (status & (1<<PD3))== 0) //PD3 pushed
                {   index=safe_incr(index);
                    OCR1AL=table[index];
                    _delay_ms(100);
            
                                 }
-                   
-                   else{
-               if((status & (1<<PD4))== 0 ){ //PD4 pushed
+         
+         
+           else{ 
+            
+                if((status & (1<<PD4))== 0 ){ //PD4 pushed
                    index=safe_dec(index);
                    OCR1AL=table[index];
                    _delay_ms(100);
                
                
                }
-           
                
+              
+               else{
+                   
+                   if(mode == 2) mode_2();
+                   
+                   else{if(mode == 1) mode_1();
+            
+             
                
                
                
@@ -145,3 +148,4 @@ int safe_dec(int x){
     if(x==0) return 0;
     else return x-1;
 }
+
