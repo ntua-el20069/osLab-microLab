@@ -40,8 +40,11 @@ int main(){
                                 // ADCS will stay high as long as the conversion is in progress, and will be
                                 // cleared by hardware when the conversion is completed
         while( (ADCSRA & (1 << ADSC)) == 1 ) ;   // wait until ADSC gets 0
-        adc = ADCH*256 + ADCL;   // read from adc (right adjusted)
+        adc =  ADCL + ADCH*256  ;   // read from adc (right adjusted)
+                                    // we should firstly read Low and then High
+                                    // else it does not give expected output
 
+            
         PORTD = led_out(adc);          // show output in port D
         
         _delay_ms(100);  
@@ -51,6 +54,5 @@ int main(){
     
     return 0;
 }
-
 
 
