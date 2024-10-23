@@ -72,7 +72,7 @@ void mode_2(){
 void main(void) {
     
     TCCR1A=(1<<WGM10)|(1<<COM1A1); // fast PWM ,output PB1 
-    TCCR1B=(1<<CS12)|(0<<CS11)|(0<<CS10); //frequency 62500Hz
+    TCCR1B=(1<<CS12)|(1<<WGM12); //frequency 62500Hz
 
     DDRB=0b00000010;  //PB1 output
     DDRD=0x00;        //PORTD input
