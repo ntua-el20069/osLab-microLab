@@ -2,8 +2,9 @@
 .def index=r22
 .equ freq=16
 .equ DELAY=500  ;delay (msec)
+.equ DELAY1=10
 .equ TOTAL=freq*DELAY  
- 
+.equ TOTAL1=freq*DELAY1 
  .dseg                     ;RAM MEMORY
  DC_VALUE : .byte 1 
    
@@ -43,7 +44,21 @@ reset:
   ldi r25,HIGH(TOTAL)
   rcall delay_thousand_cycles      ;delay 0,5sec
   
-  in r20, PIND
+  input:
+  in r19, PIND
+  mov r20,r19
+  andi r19,(1<<3)|(1<<4)
+  cpi r19, (1<<3)|(1<<4)                       
+  breq input                       
+  check:
+  ldi r24,LOW(TOTAL1)
+  ldi r25,HIGH(TOTAL1)
+  rcall delay_thousand_cycles 
+  in r19, PIND
+  andi r19,(1<<3)|(1<<4)
+  cpi r19,(1<<3)|(1<<4)
+  brne check
+  
   
   cpi r20,0b11101111               ;if equal ,PD4 pushed
   breq decrease
