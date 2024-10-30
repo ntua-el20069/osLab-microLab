@@ -5,11 +5,12 @@
 
 
 int led_out(int adc){
-    if     (adc <= 200) return 0x01;
-    else if(adc <= 400) return 0x02;
-    else if(adc <= 600) return 0x04;
-    else if(adc <= 800) return 0x08;
-    else /* (adc <= 1024) */ return 0x10;
+    if     (adc <= 170) return 0x01;
+    else if(adc <= 340) return 0x02;
+    else if(adc <= 510) return 0x04;
+    else if(adc <= 680) return 0x08;
+    else if(adc <= 850) return 0x10;
+    else /* (adc <= 1024) */ return 0x20;
 }
 
 void lcd_data(int data){
@@ -124,7 +125,36 @@ int write_2_nibbles(int a){
 
     return 1;
 }
+void clear_show(){
 
+    lcd_data('C');
+    lcd_data('L');
+    lcd_data('E');
+    lcd_data('A');
+    lcd_data('R');
+    
+    return;
+}
+
+void gas_warning(){
+    
+    lcd_clear_display();
+    _delay_ms(5);
+    lcd_data('G');
+    lcd_data('A');
+    lcd_data('S');
+    lcd_data(0b00100000);  // this is for break ' '
+    lcd_data('D');
+    lcd_data('E');
+    lcd_data('T');
+    lcd_data('E');
+    lcd_data('C');
+    lcd_data('T');
+    lcd_data('E');
+    lcd_data('D');
+    
+    return;
+}
 int lcd_clear_display(){
 
     int status=lcd_command(0x01);
@@ -134,12 +164,11 @@ int lcd_clear_display(){
 void main(void) {
     uint16_t adc;
     uint8_t div_res, first_decimal,second_decimal, level, warning_flag;
-    uint32_t mod_res;
-     
+    int order=0;
 
-       ADMUX = 0b01000001;     // REFSn[7:6] = 01 -> Vref => AVcc with external capacitor at AREF pin 
+       ADMUX = 0b01000010;     // REFSn[7:6] = 01 -> Vref => AVcc with external capacitor at AREF pin 
                             // ADLAR[5] = 0 -> right adjusted output
-                            //  MUX[3:0] = 0001 for channel ADC1
+                            //  MUX[3:0] = 0010 for channel ADC1
     
       ADCSRA = 0b10000111;    // ADEN[7] = 1 -> enable ADC
                             // ADSC[6] = 0 -> no conversion
@@ -172,6 +201,17 @@ void main(void) {
       if(warning_flag){
           if(adc > CO_limit){
               // PORTB handling   on/off
+              
+              if(order == 1 )
+              {PORTB=0x00;
+              order=0;
+              }
+              
+              else{
+                  PORTB=level;
+                  order=1;
+              }
+              
           }
           else{
               lcd_clear_display();
@@ -188,17 +228,11 @@ void main(void) {
             warning_flag=1;
             }
             PORTB = level;
+            order=1;
         }
 
-       
-      lcd_clear_display();
-      lcd_data(div_res);
-      
-      lcd_data(0b00101110);           // i am not sure if it's ok
-      
-      lcd_data(first_decimal);
-      lcd_data(second_decimal);
-      _delay_ms(800);
+       _delay_ms(100);
+
       
 }
 }
