@@ -157,10 +157,16 @@ void main(void) {
       
       first_decimal=mod_res/10;
       second_decimal=mod_res%10;
-     
+      
+      div_res|=0b00110000;
+      first_decimal|=0b00110000;
+       second_decimal|=0b00110000;  
+       
       lcd_clear_display();
       lcd_data(div_res);
-      lcd_data('.');           // i am not sure if it's ok
+      
+      lcd_data(0b00101110);           // i am not sure if it's ok
+      
       lcd_data(first_decimal);
       lcd_data(second_decimal);
       
