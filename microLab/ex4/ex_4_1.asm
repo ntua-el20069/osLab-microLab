@@ -160,8 +160,8 @@ reset:
     
 main:
     rcall lcd_clear_display
-    ldi r24, low(300)		    ; CHANGED 1000 to 300
-    ldi r25, high(300)
+    ldi r24, low(3)		    ; CHANGED 1000 to 3
+    ldi r25, high(3)
     rcall wait_msec ; delay 1 Sec
     
     lds temp, ADCSRA
@@ -324,6 +324,9 @@ number_to_lcd_data:
     mov r24, temp
     ori r24, 0b00110000
     ret
+
+
+
 
 
 
