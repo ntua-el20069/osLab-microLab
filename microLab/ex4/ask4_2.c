@@ -62,6 +62,9 @@ void lcd_init(){
 
        status=lcd_command(0x0c); //display on ,cursor off
        
+       lcd_clear_display();
+       
+       lcd_command(0x06);
        return ;
 }
 
@@ -119,7 +122,10 @@ int lcd_clear_display(){
     return 1;
 }
 void main(void) {
-    int adc,div_res,mod_res,first_decimal,second_decimal;
+    uint16_t adc;
+    uint8_t div_res, first_decimal,second_decimal;
+    uint32_t mod_res;
+
        ADMUX = 0b01000001;     // REFSn[7:6] = 01 -> Vref => AVcc with external capacitor at AREF pin 
                             // ADLAR[5] = 0 -> right adjusted output
                             //  MUX[3:0] = 0001 for channel ADC1
@@ -130,6 +136,8 @@ void main(void) {
                             // ADPS[2:0] = 111 -> Division factor 128 so fADC = 16MHz/128 = 125kHz
     
       DDRD=0xFF;         //PORTD output
+      
+      DDRB = 0xFF;      // PORTB output
       lcd_init();
       
       while(1){
@@ -146,7 +154,7 @@ void main(void) {
       adc =  ADCL + ADCH*256  ;   // read from adc (right adjusted)
                                     // we should firstly read Low and then High
                                     // else it does not give expected output
-    
+      
       adc=adc*5;
       
       div_res=adc/1024;            // integer part of Vin
@@ -155,12 +163,22 @@ void main(void) {
       mod_res=mod_res*100;       //multiply x 100 to find the 2 decimal digits
       mod_res=mod_res/1024;
       
-      first_decimal=mod_res/10;
-      second_decimal=mod_res%10;
+      first_decimal=(mod_res%100)/10;
+      second_decimal=(mod_res%100)%10;
+       
+      /*
+      div_res = adc*5/1024; // integer part
+      
+      result = 500*adc/1024;   // 100*Vin
+      first_decimal = (result%100)/10;
+      second_decimal = (result%100)%10;
+      */
+      
+      PORTB = second_decimal;
       
       div_res|=0b00110000;
       first_decimal|=0b00110000;
-       second_decimal|=0b00110000;  
+      second_decimal|=0b00110000;  
        
       lcd_clear_display();
       lcd_data(div_res);
@@ -169,6 +187,7 @@ void main(void) {
       
       lcd_data(first_decimal);
       lcd_data(second_decimal);
+      _delay_ms(800);
       
 }
 }
