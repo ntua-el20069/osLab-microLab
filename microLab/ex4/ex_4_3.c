@@ -168,7 +168,7 @@ void main(void) {
 
        ADMUX = 0b01000010;     // REFSn[7:6] = 01 -> Vref => AVcc with external capacitor at AREF pin 
                             // ADLAR[5] = 0 -> right adjusted output
-                            //  MUX[3:0] = 0010 for channel ADC1
+                            //  MUX[3:0] = 0010 for channel ADC2
     
       ADCSRA = 0b10000111;    // ADEN[7] = 1 -> enable ADC
                             // ADSC[6] = 0 -> no conversion
