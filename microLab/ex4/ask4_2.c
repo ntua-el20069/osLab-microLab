@@ -183,7 +183,7 @@ void main(void) {
       lcd_clear_display();
       lcd_data(div_res);
       
-      lcd_data(0b00101110);           // i am not sure if it's ok
+      lcd_data(0b00101110);           // code for dot '.'
       
       lcd_data(first_decimal);
       lcd_data(second_decimal);
