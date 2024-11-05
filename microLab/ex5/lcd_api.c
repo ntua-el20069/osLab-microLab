@@ -6,8 +6,8 @@
 
 
 int write_2_nibbles(int a){
-    PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
-    uint8_t input=PCA9555_0_read(REG_INPUT_0) ;  
+    //PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
+    uint8_t input=PCA9555_0_read(REG_OUTPUT_0) ;  
     uint8_t first_nibble=a;
     uint8_t second_nibble;
     
@@ -17,7 +17,7 @@ int write_2_nibbles(int a){
     
     first_nibble=input + first_nibble;
     
-    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+    //PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     
     PCA9555_0_write(REG_OUTPUT_0,first_nibble) ; 
     
@@ -55,12 +55,12 @@ int write_2_nibbles(int a){
 }
 int lcd_command(int a){
     
-     PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
-    uint8_t res=PCA9555_0_read(REG_INPUT_0);
+     //PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
+    uint8_t res=PCA9555_0_read(REG_OUTPUT_0);
     
      res &=~(1<<2);         //Clear PD2 so that command transfer            
     
-     PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+     //PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
      PCA9555_0_write(REG_OUTPUT_0,res);
      
      write_2_nibbles(a);
@@ -77,13 +77,13 @@ int lcd_clear_display(){
 
 
 void lcd_data(int data){
-     PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
+     //PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
     //Read IO1
-    uint8_t res=PCA9555_0_read(REG_INPUT_0);
+    uint8_t res=PCA9555_0_read(REG_OUTPUT_0);
  
     res|=(1<<2);   //set the bit IO1_2 for data
     
-    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+    //PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     
     PCA9555_0_write(REG_OUTPUT_0,res); 
     
@@ -96,7 +96,7 @@ void lcd_data(int data){
 
 void lcd_init(){
     uint8_t value;
-    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+    //PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     //count 1
     _delay_ms(200);
      
