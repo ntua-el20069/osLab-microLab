@@ -1,5 +1,6 @@
-#include "lcd_api.h"
+#define F_CPU 16000000UL
 #include "twi_api.h"
+#include "lcd_api.h"
 #include "avr/io.h"
 #include<util/delay.h>
 
@@ -13,8 +14,7 @@ void type_filothei(){
      lcd_data('E');
      lcd_data('I');
      
-     for(int i=0; i<9; i++)
-     {lcd_data(0b00100000);} //break
+    lcd_command(0xc0); //move cursor to the next line
      
      lcd_data('L');
      lcd_data('I');
@@ -48,12 +48,14 @@ void type_nikos(){
      lcd_data('P');
      lcd_data('O');
      lcd_data('U');
+       
+     lcd_command(0xc0); //move cursor to the next line
+     
      lcd_data('L');
      lcd_data('O');
      lcd_data('S');
-   
-    lcd_data(0b00100000); //break
-     
+
+     lcd_data(0b00100000); //break
      lcd_data('N');
      lcd_data('I');
      lcd_data('K');
@@ -64,9 +66,10 @@ void type_nikos(){
 }
 void main(void) {
     twi_init();
-    PCA9555_0_write(REG_CONFIGURATION_1,0x00); //ouput
+    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     lcd_init();
-
+   
+    
    while(1){    
     lcd_clear_display();
     
