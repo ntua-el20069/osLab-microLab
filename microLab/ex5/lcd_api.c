@@ -6,8 +6,8 @@
 
 
 int write_2_nibbles(int a){
-
-    uint8_t input=PCA9555_0_read(REG_INPUT_1) ;  
+    PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
+    uint8_t input=PCA9555_0_read(REG_INPUT_0) ;  
     uint8_t first_nibble=a;
     uint8_t second_nibble;
     
@@ -17,19 +17,20 @@ int write_2_nibbles(int a){
     
     first_nibble=input + first_nibble;
     
+    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     
-    PCA9555_0_write(REG_OUTPUT_1,first_nibble) ; 
+    PCA9555_0_write(REG_OUTPUT_0,first_nibble) ; 
     
     first_nibble|=(1<<3); //enable pulse
     
-    PCA9555_0_write(REG_OUTPUT_1,first_nibble) ; 
+    PCA9555_0_write(REG_OUTPUT_0,first_nibble) ; 
     
         __asm__ __volatile__ ("nop");
       __asm__ __volatile__ ("nop");
       
       
       first_nibble&=~(1<<3);  //clear PD3
-      PCA9555_0_write(REG_OUTPUT_1,first_nibble) ; 
+      PCA9555_0_write(REG_OUTPUT_0,first_nibble) ; 
       
     second_nibble=a;
     second_nibble=(second_nibble << 4) | (second_nibble >> 4); //swaps the nibbles
@@ -37,11 +38,11 @@ int write_2_nibbles(int a){
     second_nibble=input +second_nibble;
     
   
-    PCA9555_0_write(REG_OUTPUT_1,second_nibble) ; 
+    PCA9555_0_write(REG_OUTPUT_0,second_nibble) ; 
     
     second_nibble|=(1<<3);  //enable pulse
     
-     PCA9555_0_write(REG_OUTPUT_1,second_nibble) ;
+     PCA9555_0_write(REG_OUTPUT_0,second_nibble) ;
     
     __asm__ __volatile__ ("nop");
       __asm__ __volatile__ ("nop");
@@ -49,16 +50,18 @@ int write_2_nibbles(int a){
 
       second_nibble&=~(1<<3); //clear pulse
       
-      PCA9555_0_write(REG_OUTPUT_1,second_nibble) ;
+      PCA9555_0_write(REG_OUTPUT_0,second_nibble) ;
     return 1;
 }
 int lcd_command(int a){
-    uint8_t res=PCA9555_0_read(REG_INPUT_1);
+    
+     PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
+    uint8_t res=PCA9555_0_read(REG_INPUT_0);
     
      res &=~(1<<2);         //Clear PD2 so that command transfer            
     
-     
-     PCA9555_0_write(REG_OUTPUT_1,res);
+     PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+     PCA9555_0_write(REG_OUTPUT_0,res);
      
      write_2_nibbles(a);
     
@@ -74,11 +77,16 @@ int lcd_clear_display(){
 
 
 void lcd_data(int data){
-    
+     PCA9555_0_write(REG_CONFIGURATION_0,0xFF); //input
     //Read IO1
-    uint8_t res=PCA9555_0_read(REG_INPUT_1);
+    uint8_t res=PCA9555_0_read(REG_INPUT_0);
  
     res|=(1<<2);   //set the bit IO1_2 for data
+    
+    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+    
+    PCA9555_0_write(REG_OUTPUT_0,res); 
+    
     
     write_2_nibbles(data);
       
@@ -88,17 +96,17 @@ void lcd_data(int data){
 
 void lcd_init(){
     uint8_t value;
-    
+    PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     //count 1
     _delay_ms(200);
      
      value=0x30;       //command to switch to 8 bit mode
       
-     PCA9555_0_write(REG_OUTPUT_1,value);  //maybe i have to delete it
+     PCA9555_0_write(REG_OUTPUT_0,value);  //maybe i have to delete it
      
      value|=(1<<3);                 //Enable pulse
 
-     PCA9555_0_write(REG_OUTPUT_1,value);
+     PCA9555_0_write(REG_OUTPUT_0,value);
 
       
       __asm__ __volatile__ ("nop");
@@ -109,7 +117,7 @@ void lcd_init(){
       
          value &= ~(1 << 3);                  // Clear pulse
       
-         PCA9555_0_write(REG_OUTPUT_1,value);
+         PCA9555_0_write(REG_OUTPUT_0,value);
       
          _delay_ms(0.25);
       
@@ -118,11 +126,11 @@ void lcd_init(){
      
      value=0x30;       //command to switch to 8 bit mode
       
-     PCA9555_0_write(REG_OUTPUT_1,value);  //maybe i have to delete it
+     PCA9555_0_write(REG_OUTPUT_0,value);  //maybe i have to delete it
      
      value|=(1<<3);                 //Enable pulse
 
-     PCA9555_0_write(REG_OUTPUT_1,value);
+     PCA9555_0_write(REG_OUTPUT_0,value);
 
       
       __asm__ __volatile__ ("nop");
@@ -133,7 +141,7 @@ void lcd_init(){
       
          value &= ~(1 << 3);                  // Clear pulse
       
-         PCA9555_0_write(REG_OUTPUT_1,value);
+         PCA9555_0_write(REG_OUTPUT_0,value);
       
          _delay_ms(0.25);
       
@@ -144,11 +152,11 @@ void lcd_init(){
      
      value=0x30;       //command to switch to 8 bit mode
       
-     PCA9555_0_write(REG_OUTPUT_1,value);  //maybe i have to delete it
+     PCA9555_0_write(REG_OUTPUT_0,value);  //maybe i have to delete it
      
      value|=(1<<3);                 //Enable pulse
 
-     PCA9555_0_write(REG_OUTPUT_1,value);
+     PCA9555_0_write(REG_OUTPUT_0,value);
 
       
       __asm__ __volatile__ ("nop");
@@ -159,7 +167,7 @@ void lcd_init(){
       
          value &= ~(1 << 3);                  // Clear pulse
       
-         PCA9555_0_write(REG_OUTPUT_1,value);
+         PCA9555_0_write(REG_OUTPUT_0,value);
       
          _delay_ms(0.25);
       
@@ -168,16 +176,16 @@ void lcd_init(){
       
        value=0x20;       //command to switch to 8 bit mode
       
-      PCA9555_0_write(REG_OUTPUT_1,value); //maybe i have to delete this command
+      PCA9555_0_write(REG_OUTPUT_0,value); //maybe i have to delete this command
        value|=(1<<3);                 //Enable pulse
 
-     PCA9555_0_write(REG_OUTPUT_1,value);
+     PCA9555_0_write(REG_OUTPUT_0,value);
             __asm__ __volatile__ ("nop");
       __asm__ __volatile__ ("nop");
       
        value&=~(1 << 3);                  // Clear pulse
       
-         PCA9555_0_write(REG_OUTPUT_1,value);
+         PCA9555_0_write(REG_OUTPUT_0,value);
       
       _delay_ms(0.25);
       
