@@ -63,6 +63,8 @@ void type_nikos(){
 
 }
 void main(void) {
+    twi_init();
+    PCA9555_0_write(REG_CONFIGURATION_1,0x00); //ouput
     lcd_init();
 
    while(1){    
