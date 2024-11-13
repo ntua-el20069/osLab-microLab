@@ -4,7 +4,7 @@
 #include "lcd_api.h"
 #include "twi_api.h"
 int main(){
-    lcd_init();
+   
     twi_init();
     PCA9555_0_write(6 ,0x00); //IO0 as output for LCD
     
