@@ -4,8 +4,8 @@
  * Implementation of character devices
  * for Lunix:TNG
  *
- * < Your name here >
- *
+ * Filothei Linardatou
+ * Nikolaos Papakonstantopoulos
  */
 
 #include <linux/mm.h>
@@ -209,20 +209,19 @@ int lunix_chrdev_init(void)
 	dev_no = MKDEV(LUNIX_CHRDEV_MAJOR, 0);
 	/* ? */
 	/* register_chrdev_region? */
-
-	/* Since this code is a stub, exit early */
-	return 0;
-
+	ret = register_chrdev_region(dev_no, lunix_minor_cnt, "lunix_chrdev");
 	if (ret < 0) {
 		debug("failed to register region, ret = %d\n", ret);
 		goto out;
 	}
 	/* ? */
 	/* cdev_add? */
+	ret = cdev_add(&lunix_chrdev_cdev, dev_no, lunix_minor_cnt);
 	if (ret < 0) {
 		debug("failed to add character device\n");
 		goto out_with_chrdev_region;
 	}
+	
 	debug("completed successfully\n");
 	return 0;
 
