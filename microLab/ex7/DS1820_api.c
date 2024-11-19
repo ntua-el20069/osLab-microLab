@@ -3,15 +3,15 @@
 #include "DS1820_api.h"
 
 
-int one_wire_reset(){
+uint8_t one_wire_reset(){
    
-     DDRD=0x10;         //PD4 output
-    PORTD=~(1<<PD4);   //PD4=0
+     DDRD|=0x10;         //PD4 output
+    PORTD&= (uint8_t) ~(1U<<4);   //PD4=0
     
     _delay_ms(0.48);   //480usec
 
-    DDRD=0x00;       //PD4 input
-    PORTD=~(1<<PD4);   //disable pull-up
+    DDRD|=0x00;       //PD4 input
+    PORTD&= (uint8_t) ~(1U<<4);   //disable pull-up
     
     _delay_ms(0.1);  //wait 100 usec for connected devices to transmit the presence pulse
             
@@ -24,21 +24,22 @@ int one_wire_reset(){
     
     if((output & (1<<PD4))== 0x00 )  return 1; //PD4 =0 connected device is detected
     
-    return 0;   //connected device isn't detected
+    else
+    {return 0;  } //connected device isn't detected
        
     
   }
 
 
-int one_wire_receive_bit(){
+uint8_t one_wire_receive_bit(){
 
-    DDRD=0x10;   //PD4 as output
+    DDRD|=0x10;   //PD4 as output
     PORTD=~(1<<PD4);
     _delay_ms(0.002);
     
     
-    DDRD=0x00;       //PD4 input
-    PORTD=~(1<<PD4);   //disable pull-up
+    DDRD&= (uint8_t) ~(1U<<4);     //PD4 input
+    PORTD&= (uint8_t) ~(1U<<4);   //disable pull-up
     
     _delay_ms(0.01);
     
@@ -48,18 +49,10 @@ int one_wire_receive_bit(){
     
     _delay_ms(0.049);
     return 0;  //0 is read
-    }
-
-    else{
-    _delay_ms(0.049);
-    return 1; //1 is read
-    }    
-
-}
+    }}
 
 void one_wire_transmit_bit(uint8_t bit){
-
-    DDRD=0x10;   //PD4 output
+ DDRD=0x10;   //PD4 output
     
     PORTD=~(1<<PD4);
     
@@ -79,7 +72,7 @@ void one_wire_transmit_bit(uint8_t bit){
 
 uint8_t one_wire_receive_byte(){
 
-    uint8_t received_data=0x00;
+ uint8_t received_data=0x00;
     
     uint8_t aux;
     
@@ -89,12 +82,8 @@ uint8_t one_wire_receive_byte(){
        aux=one_wire_receive_bit();
        aux<<i;
        received_data|=aux;
-      
-     }
-
-     return received_data;
 }
-
+}
 void one_wire_transmit_byte(uint8_t data){
 
     uint8_t aux;
