@@ -98,9 +98,16 @@ static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 	/* Declarations */
 	/* ? */
 	int ret;
+	struct lunix_chrdev_state_struct *state;
+    int minor = iminor(inode);
 
 	debug("entering\n");
 	ret = -ENODEV;
+
+	// Ensure the file does not open in write only or read and write mode
+	if ((filp->f_flags & O_WRONLY) || (filp->f_flags & O_RDWR))
+    return -EPERM;
+
 	if ((ret = nonseekable_open(inode, filp)) < 0)
 		goto out;
 
@@ -108,9 +115,44 @@ static int lunix_chrdev_open(struct inode *inode, struct file *filp)
 	 * Associate this open file with the relevant sensor based on
 	 * the minor number of the device node [/dev/sensor<NO>-<TYPE>]
 	 */
+	state = kmalloc(sizeof(struct lunix_chrdev_state_struct), GFP_KERNEL);
+    if (!state) {
+        printk(KERN_ERR "Failed to allocate memory for character device private state\n");
+		ret = -ENOMEM;
+        goto out;
+    }
+
+	// use the minor number to determine the sensor and the type of chrdev state struct 
+	state->type = minor & 0x7;
+	state->sensor = &lunix_sensors[minor >> 3];
+	// initialize buffer and semaphore
+	state->buf_lim = 0;
+	state->buf_timestamp = 0;
+	sema_init(&state->lock, 1);
 	
 	/* Allocate a new Lunix character device private state structure */
 	/* ? */
+	filp->private_data = state;
+	debug("character device state initialized successfully\n");
+
+	switch (state->type) {
+		case BATT: 
+			debug("/dev/sensor%d-batt opened\n", minor >> 3);
+			break;
+		case TEMP: 
+			debug("/dev/sensor%d-temp opened\n", minor >> 3);
+			break;
+		case LIGHT: 
+			debug("/dev/sensor%d-light opened\n", minor >> 3);
+			break;
+		default:
+			/* Only battery, temperature and light measurements are supported */
+			printk(KERN_ERR "This measurement isn't supported (Only 0,1,2 are supported)\n");
+			goto out;
+	}
+
+    ret = 0;
+
 out:
 	debug("leaving, with ret = %d\n", ret);
 	return ret;
@@ -118,7 +160,9 @@ out:
 
 static int lunix_chrdev_release(struct inode *inode, struct file *filp)
 {
-	/* ? */
+	WARN_ON(!filp->private_data);
+	kfree(filp->private_data);
+	debug("character device state memory released\n");
 	return 0;
 }
 
