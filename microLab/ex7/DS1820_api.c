@@ -34,7 +34,7 @@ uint8_t one_wire_reset(){
 uint8_t one_wire_receive_bit(){
 
     DDRD|=0x10;   //PD4 as output
-    PORTD=~(1<<PD4);
+    PORTD&= (uint8_t) ~(1U<<4);
     _delay_ms(0.002);
     
     
@@ -52,19 +52,19 @@ uint8_t one_wire_receive_bit(){
     }}
 
 void one_wire_transmit_bit(uint8_t bit){
- DDRD=0x10;   //PD4 output
+ DDRD|=0x10;   //PD4 output
     
-    PORTD=~(1<<PD4);
+    PORTD=&= (uint8_t) ~(1U<<4);
     
     _delay_ms(0.002);
     
-    if(bit == 0x00 ) PORTD=~(1<<PD4);
-    else if(bit == 0x01) PORTD=(1<<PD4);
+    if(bit == 0x00 ) PORTD&= (uint8_t) ~(1U<<4);
+    else if(bit == 0x01) PORTD|=(1<<PD4);
     
     _delay_ms(0.058);  //wait 58 usec for connected device to sample line 
    
     DDRD=0x00;   //PD4 input
-    PORTD=~(1<<PD4); //PD4 off to disable pull-up
+    PORTD&= (uint8_t) ~(1U<<4); //PD4 off to disable pull-up
     
     _delay_ms(0.001);  //recovery time
     
@@ -80,7 +80,7 @@ uint8_t one_wire_receive_byte(){
     for(int i=0; i<8; i++){
     
        aux=one_wire_receive_bit();
-       aux<<i;
+       aux=aux<<i;
        received_data|=aux;
 }
 }
