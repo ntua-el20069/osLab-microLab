@@ -11,7 +11,7 @@ uint16_t read_temperature(){
     uint8_t first, second;
     
     if(one_wire_reset() == 0)              //initialization and check for devices 
-    {   PORTB=0x00;
+    {   PORTB=0x02;
         return 0x8000;  //no device
     
                 }
@@ -24,7 +24,7 @@ uint16_t read_temperature(){
     
     if(one_wire_reset() == 0){
       
-        PORTB=0x00;
+        PORTB=0x01;
      return 0x8000;   
     }
     
@@ -37,7 +37,7 @@ uint16_t read_temperature(){
     second= one_wire_receive_byte(); 
 
       PORTB=second;
-    
+    /*
         asm volatile(
         "mov r24, %0"    // Move the value of 'second' into register R24
         :                // No output operands
@@ -52,17 +52,34 @@ uint16_t read_temperature(){
         : "r" (first)      // Input operand: 'second' stored in a general-purpose register
         : "r25"          // Clobber list: R25 is modified
     );
-                    
+      */
 
-        info|=first;
+        info |= second;    
         
-        info<<8;     //[first][0x00]
+        info = info << 8;   //[second][0x00]
         
-        info|=second; //[first][second]
+        info|=first; //[second][first]
         
-        return info;
+    
+    return info;
 }
 
+
+uint16_t get_temperature(void) {
+	if (!one_wire_reset()) return 0x8000L;
+	one_wire_transmit_byte(0xCC);
+	one_wire_transmit_byte(0x44);
+	while (!one_wire_receive_bit());
+	if (!one_wire_reset()) return 0x8000L;
+	one_wire_transmit_byte(0xCC);
+	one_wire_transmit_byte(0xBE);
+	
+	uint16_t ret;
+	ret = one_wire_receive_byte(); //LSB byte
+	ret |= one_wire_receive_byte() << 8; //MSB byte
+
+	return ret;
+}
 
 void no_device(){
      lcd_data('N');
@@ -88,7 +105,7 @@ float convert(uint16_t res, int status){ // status 0 for DS1820, status 1 for DS
 
 
 void display_temperature(uint16_t response){
-    float x = convert(response, 0);
+    float x = convert(response, 1); // status 1 for DS18B20
     
     // + or - in lcd and get absolute value in x
     if(x < 0) {lcd_data('-') ; x = -x;}
