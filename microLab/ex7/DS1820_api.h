@@ -28,8 +28,8 @@
 
 // This is a guard condition so that contents of this file are not included
 // more than once.  
-#ifndef XC_HEADER_TEMPLATE_H
-#define	XC_HEADER_TEMPLATE_H
+#ifndef DS1820_HEADER_H
+#define	DS1820_HEADER_H
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
@@ -65,8 +65,8 @@
 // TODO Insert declarations or function prototypes (right here) to leverage 
 // live documentation
 
-int one_wire_reset();
-int one_wire_receive_bit();
+uint8_t one_wire_reset();
+uint8_t one_wire_receive_bit();
 void one_wire_transmit_bit(uint8_t bit);
 uint8_t one_wire_receive_byte();
 void one_wire_transmit_byte(uint8_t data);
@@ -84,5 +84,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif	/* XC_HEADER_TEMPLATE_H */
-
+#endif	/* DS1820_HEADER_H */
