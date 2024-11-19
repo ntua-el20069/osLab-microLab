@@ -10,7 +10,7 @@ uint8_t one_wire_reset(){
     
     _delay_ms(0.48);   //480usec
 
-    DDRD|=0x00;       //PD4 input
+    DDRD&=(uint8_t) ~(1U<<4);       //PD4 input
     PORTD&= (uint8_t) ~(1U<<4);   //disable pull-up
     
     _delay_ms(0.1);  //wait 100 usec for connected devices to transmit the presence pulse
