@@ -49,9 +49,10 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
 	
 	WARN_ON ( !(sensor = state->sensor));
 	/* ? */
+	if(sensor->msr_data[state->type]->last_update > state->buf_timestamp)
+		return 1;
 
-	/* The following return is bogus, just for the stub to compile */
-	return 0; /* ? */
+	return 0; 
 }
 
 /*
