@@ -55,6 +55,23 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
 	return 0; 
 }
 
+
+long integer_part(long lookup_value){
+	return lookup_value / 10000;
+}
+
+long decimal_part(long lookup_value){
+	return lookup_value % 10000;
+}
+
+char *convert(long lookup_value){
+	static char buf[10];
+	long int_part = integer_part(lookup_value);
+	long dec_part = decimal_part(lookup_value);
+	sprintf(buf, "%ld.%ld", int_part, dec_part);
+	return buf;
+}
+
 /*
  * Updates the cached state of a character device
  * based on sensor data. Must be called with the
@@ -63,29 +80,65 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
 static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 {
 	struct lunix_sensor_struct __attribute__((unused)) *sensor;
+	WARN_ON ( !(sensor = state->sensor));
 	
-	debug("leaving\n");
+	debug("entering lunix_chrdev_state_update ...\n");
 
+	uint32_t msr_data;
+	uint32_t msr_timestamp;
+	
+	/*
+	 * Any new data available?
+	 */
+	/* ? */
+	// check if the state needs to be updated
+	if(lunix_chrdev_state_needs_refresh(state) == 0){
+		debug("leaving (no new data)\n");
+		return -EAGAIN;
+	}
+	
 	/*
 	 * Grab the raw data quickly, hold the
 	 * spinlock for as little as possible.
 	 */
 	/* ? */
 	/* Why use spinlocks? See LDD3, p. 119 */
-
-	/*
-	 * Any new data available?
-	 */
-	/* ? */
+	// need to update the state
+	spin_lock_irq(&sensor->lock);
+	msr_data = sensor->msr_data[state->type]->values[0];	// grab from sensor -> msr_data -> ... -> values[] 
+	msr_timestamp = sensor->msr_data[state->type]->last_update;
+	spin_unlock_irq(&sensor->lock);
 
 	/*
 	 * Now we can take our time to format them,
 	 * holding only the private state semaphore
 	 */
-
 	/* ? */
 
-	debug("leaving\n");
+	down(&state->lock);	// down for semaphore lock
+	// update the state
+	// use the lookup tables to convert the raw data to textual info
+	// update the below fields for chrdev state struct:
+	// buf_lim, buf_timestamp, buf_data
+	switch(state->type) {
+		case BATT:
+			state->buf_lim = snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "Battery: %s\n", convert(lookup_voltage[msr_data]));
+			break;
+		case TEMP:
+			state->buf_lim = snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "Temp: %s\n", convert(lookup_temperature[msr_data]));
+			break;
+		case LIGHT:
+			state->buf_lim = snprintf(state->buf_data, LUNIX_CHRDEV_BUFSZ, "Light: %s\n", convert(lookup_light[msr_data]));
+			break;
+		default:
+			printk(KERN_ERR "This measurement isn't supported (Only 0,1,2 are supported)\n");
+			up(&state->lock);
+			return -EINVAL;
+	}
+	state->buf_timestamp = msr_timestamp;
+	up(&state->lock);	// up for semaphore lock
+
+	debug("leaving (update ok)\n");
 	return 0;
 }
 
