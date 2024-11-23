@@ -115,7 +115,9 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 	 */
 	/* ? */
 
-	down(&state->lock);	// down for semaphore lock
+	if (down_interruptible(&state->lock))	// down for semaphore lock
+		return -ERESTARTSYS;
+
 	// update the state
 	// use the lookup tables to convert the raw data to textual info
 	// update the below fields for chrdev state struct:
@@ -231,6 +233,7 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 
 	struct lunix_sensor_struct *sensor;
 	struct lunix_chrdev_state_struct *state;
+	int count;
 
 	state = filp->private_data;
 	WARN_ON(!state);
@@ -238,28 +241,69 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	sensor = state->sensor;
 	WARN_ON(!sensor);
 
+	debug("entering read\n");
+
 	/* Lock? */
+	if (down_interruptible(&state->lock))
+		return -ERESTARTSYS;
 	/*
 	 * If the cached character device state needs to be
 	 * updated by actual sensor data (i.e. we need to report
 	 * on a "fresh" measurement, do so
 	 */
 	if (*f_pos == 0) {
-		while (lunix_chrdev_state_update(state) == -EAGAIN) {
+		while (true) {
+			int update_ret = lunix_chrdev_state_update(state);
+			if(update_ret == -EINVAL) {
+				debug("(invalid argument)\n");
+				ret = -EINVAL;
+				goto unlock_and_out;
+			}
+			if(update_ret == 0) break;	// update done (exit while loop)
+
+			if(update_ret != -EAGAIN) {
+				debug("(unexpected return value in update)\n");
+				ret = update_ret;
+				goto unlock_and_out;
+			}
+			// if update_ret == -EAGAIN
 			/* ? */
 			/* The process needs to sleep */
 			/* See LDD3, page 153 for a hint */
+			// wait for the sensor to update the state
+			up(&state->lock);	// up for semaphore lock
+			debug("putting process to sleep until new \n");
+			if(wait_event_interruptible(sensor->wq, lunix_chrdev_state_needs_refresh(state)))
+				return -ERESTARTSYS;
+
+			if (down_interruptible(&state->lock))
+				return -ERESTARTSYS;
 		}
+		
+		// here the state has been updated and semaphore lock is down
 	}
+
+	/* Determine the number of cached bytes to copy to userspace */
+	/* ? */
+	count = min(cnt, (size_t) state->buf_lim - *f_pos);
+	if(copy_to_user(usrbuf, state->buf_data + *f_pos, count)){	// copy_to_user returns 0 on success
+		debug("leaving (copy_to_user failed)\n");
+		ret = -EFAULT;
+		goto unlock_and_out;
+	}
+	
+	*f_pos += count;	// update the file position
+
+	/* Return the read number of bytes */
+	ret = count;
 
 	/* End of file */
 	/* ? */
-	
-	/* Determine the number of cached bytes to copy to userspace */
-	/* ? */
-
 	/* Auto-rewind on EOF mode? */
 	/* ? */
+	if (*f_pos == state->buf_lim) {
+		*f_pos = 0;	// reset the file position to start
+	}
 
 	/*
 	 * The next two lines  are just meant to suppress a compiler warning
@@ -267,10 +311,11 @@ static ssize_t lunix_chrdev_read(struct file *filp, char __user *usrbuf, size_t 
 	 * It's true, this helpcode is a stub, and doesn't use them properly.
 	 * Remove them when you've started working on this code.
 	 */
-	ret = -ENODEV;
-	goto out;
-out:
-	/* Unlock? */
+	//ret = -ENODEV;
+	//goto out;
+unlock_and_out:
+	up(&state->lock);	/* Unlock? */
+	debug("leaving read, with ret = %d\n", (int)ret);
 	return ret;
 }
 
