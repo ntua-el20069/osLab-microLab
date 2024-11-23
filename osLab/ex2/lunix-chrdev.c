@@ -57,11 +57,11 @@ static int lunix_chrdev_state_needs_refresh(struct lunix_chrdev_state_struct *st
 
 
 long integer_part(long lookup_value){
-	return lookup_value / 10000;
+	return lookup_value / 1000;
 }
 
 long decimal_part(long lookup_value){
-	return lookup_value % 10000;
+	return lookup_value % 1000;
 }
 
 char *convert(long lookup_value){
@@ -114,9 +114,7 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 	 * holding only the private state semaphore
 	 */
 	/* ? */
-
-	if (down_interruptible(&state->lock))	// down for semaphore lock
-		return -ERESTARTSYS;
+	// update is called with the semaphore lock held (we don't need to lock again)
 
 	// update the state
 	// use the lookup tables to convert the raw data to textual info
@@ -138,11 +136,11 @@ static int lunix_chrdev_state_update(struct lunix_chrdev_state_struct *state)
 			return -EINVAL;
 	}
 	state->buf_timestamp = msr_timestamp;
-	up(&state->lock);	// up for semaphore lock
 
 	debug("leaving (update ok)\n");
 	return 0;
 }
+
 
 /*************************************
  * Implementation of file operations
@@ -365,7 +363,7 @@ int lunix_chrdev_init(void)
 		goto out_with_chrdev_region;
 	}
 	
-	debug("completed successfully\n");
+	debug("completed successfully \nAuthors: Filothei and Nikolaos\n");
 	return 0;
 
 out_with_chrdev_region:
