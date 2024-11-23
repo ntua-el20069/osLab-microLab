@@ -51,6 +51,10 @@ struct lunix_chrdev_state_struct {
 int lunix_chrdev_init(void);
 void lunix_chrdev_destroy(void);
 
+long integer_part(long lookup_value);
+long decimal_part(long lookup_value);
+char *convert(long lookup_value);
+
 #endif /* __KERNEL__ */
 
 #include <linux/ioctl.h>
