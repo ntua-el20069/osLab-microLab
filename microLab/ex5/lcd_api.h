@@ -28,8 +28,8 @@
 
 // This is a guard condition so that contents of this file are not included
 // more than once.  
-#ifndef XC_HEADER_TEMPLATE_H
-#define	XC_HEADER_TEMPLATE_H
+#ifndef LCD_H
+#define	LCD_H
 
 //#include <xc.h> // include processor files - each processor file is guarded.  
 
@@ -74,6 +74,8 @@ int write_2_nibbles(int a);
 
 int lcd_clear_display();
 
+void lcd_message(char *message);
+
 
 #ifdef	__cplusplus
 extern "C" {
@@ -86,5 +88,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif	/* XC_HEADER_TEMPLATE_H */
-
+#endif	/* LCD_H */
