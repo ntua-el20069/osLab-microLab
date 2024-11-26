@@ -1,6 +1,7 @@
 #include<avr/io.h>
 #include<avr/interrupt.h>
 #include "avr/io.h"
+#include "string.h"
 #include<util/delay.h>
 #include "twi_api.h"
 
@@ -201,5 +202,10 @@ void lcd_init(){
        return ;
 }
 
-
+void lcd_message(char *message){
+    lcd_clear_display();    // clear screen
+    for(int i=0; i<strlen(message); i++){    // send the message
+        lcd_data(message[i]);
+    }
+}
 
