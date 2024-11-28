@@ -109,3 +109,54 @@ void one_wire_transmit_byte(uint8_t data){
 
 }
 
+uint16_t read_temperature(){
+
+    uint16_t info=0x0000;
+    uint8_t first, second;
+    
+    if(one_wire_reset() == 0)              //initialization and check for devices 
+    {   PORTB=0x02;
+        return 0x8000;  //no device
+    
+                }
+    
+    one_wire_transmit_byte(0xCC);  // off multiple device selection
+     
+    one_wire_transmit_byte(0x44);  //start  measurement
+    
+    while(!one_wire_receive_bit()) ; //wait for the measurement to finish
+    
+    if(one_wire_reset() == 0){
+      
+        PORTB=0x01;
+     return 0x8000;   
+    }
+    
+    one_wire_transmit_byte(0xCC);  // off multiple device selection
+
+    one_wire_transmit_byte(0xBE);  // read 16-bits measurement
+    
+    first=one_wire_receive_byte();
+    
+    second= one_wire_receive_byte(); 
+
+      PORTB=second;
+
+
+        info |= second;    
+        
+        info = info << 8;   //[second][0x00]
+        
+        info|=first; //[second][first]
+    
+    return info;
+}
+
+float convert(uint16_t res, int status){ // status 0 for DS1820, status 1 for DS18B20
+	int result = (int16_t)res;
+	float temp = -55.0 + (result + 110.0)*0.5;      // DS1820
+	float temp_b = -55.0 + (result + 880.0)*0.0625; // DS18B20
+    if(status==0) return temp;
+    return temp_b;  
+}
+
