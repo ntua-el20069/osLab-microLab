@@ -71,6 +71,9 @@ void one_wire_transmit_bit(uint8_t bit);
 uint8_t one_wire_receive_byte();
 void one_wire_transmit_byte(uint8_t data);
 
+uint16_t read_temperature();
+float convert(uint16_t res, int status);
+
 
 
 #ifdef	__cplusplus
