@@ -202,6 +202,42 @@ void lcd_init(){
        return ;
 }
 
+void display_float(float x){
+    
+    // + or - in lcd and get absolute value in x
+    if(x < 0) {lcd_data('-') ; x = -x;}
+    else lcd_data('+');
+    
+    int a,b,c,d,e,f,g; // number format: abc.defg
+
+    // x integer and decimal part
+    int x_i = (int)x;
+    int x_d = (int)(10000*(x - x_i));
+
+    a = x_i/100;            // hundreds;
+    b = (x_i%100)/10;       // decades
+    c = x_i%10;             // units
+    d = x_d/1000;           // first decimal 
+    e = (x_d%1000)/100;     // second
+    f = (x_d%100)/10;       // third
+    g = x_d%10;
+
+
+    if(a==0 && b==0) ;
+    else {
+            if(a!=0) lcd_data(a | 0b00110000);
+            lcd_data(b | 0b00110000);
+    }
+    lcd_data(c | 0b00110000);
+    lcd_data('.');
+    lcd_data(d | 0b00110000);
+    lcd_data(e | 0b00110000);
+    lcd_data(f | 0b00110000);
+    lcd_data(g | 0b00110000);
+
+    // dot // lcd_data(0b00101110);           // code for dot '.'
+}
+
 void lcd_message(char *message){
     lcd_clear_display();    // clear screen
     for(int i=0; i<strlen(message); i++){    // send the message
