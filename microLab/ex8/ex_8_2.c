@@ -22,6 +22,7 @@ float pressure;
 int main(){
     
     // initializations
+    DDRB = 0xFF; // port B output for check
     twi_init();
     PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
     lcd_init();
