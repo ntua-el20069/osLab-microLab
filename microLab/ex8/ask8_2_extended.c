@@ -206,8 +206,8 @@ int main(){
     
         _delay_ms(3000);    // wait for the message to be seen
         
-        if ( conversation("ESP:transmit", buffer, BUF_SIZE, "\"200 OK\"") ) lcd_message("TRANSMIT Success");
-        else lcd_message("TRANSMIT Failure");
+        if( conversation("ESP:transmit", buffer, BUF_SIZE, "\"200 OK\"") ) lcd_message(buffer);
+        else lcd_message(buffer);
     
          _delay_ms(3000);    // wait for the message to be seen
         
