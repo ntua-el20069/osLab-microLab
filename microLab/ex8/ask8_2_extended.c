@@ -1,4 +1,5 @@
 #define F_CPU 16000000UL
+#define TEMP_INCREMENT 15
 #include <util/delay.h>
 #include "avr/io.h"
 #include <string.h>
@@ -19,7 +20,7 @@ uint16_t therm_answer;    // for temp answer from DS18B20
 uint16_t adc;   // value from adc
 float temperature;
 float pressure;
-
+char payload[200];
 
 
 char* check(){
@@ -39,11 +40,13 @@ char* check(){
     return "OK";
   
 }
-char* configure(char * stat){
-    char * output;
-sprintf(output, "ESP:payload:[{\"name\":\"temperature\",\"value\":%.3f},{\"name\":\"pressure\",\"value\":%.3f},{\"name\":\"team\",\"value\":\"51\"},{\"name\":\"status\",\"value\":%s}]", temperature,pressure,stat);
+void configure(char * stat){
+  
+sprintf(payload, "ESP:payload:[{\"name\":\"temperature\",\"value\":\"%.3f\"},{\"name\":\"pressure\",\"value\":\"%.3f\"},{\"name\":\"team\",\"value\":\"51\"},{\"name\":\"status\",\"value\":\"%s\"}]", temperature,pressure,stat);
+   ;
 
-return output;
+    
+ 
 
 }
 
@@ -52,7 +55,7 @@ return output;
 int main(){
  
  char *status;
- char *payload;
+
  int one_pressed;
     
         one_pressed=0;
@@ -102,34 +105,33 @@ int main(){
         lcd_clear_display();
         
         // read temperature from DS18B20
-        lcd_message("Temp: ");
+        //lcd_message("Temp: ");
         therm_answer = read_temperature();
-        float temperature;
         if(therm_answer == 0x8000) {
             lcd_message("NO device");
             temperature = -1.0;
         }
         else {
             temperature = convert(therm_answer, 1); // status 1 for DS18B20
-            temperature += 15.0; // make temperature around 37 (as human temperature)
-            display_float(temperature);
+            temperature += TEMP_INCREMENT; // make temperature around 37 (as human temperature)
+            //display_float(temperature);
         }
         
-        _delay_ms(2000);
+        //_delay_ms(2000);
         
         // take pressure 0-20 from potensiometer
-        lcd_message("Press: ");
+        //lcd_message("Press: ");
         adc = adc_read();
         pressure = adc * 20.0 / 1024;
-        display_float(pressure);
+        //display_float(pressure);
         
-        _delay_ms(2000);
+        //_delay_ms(2000);
         
         
         //here starts the code i added
         PORTB=0b11110000;
         lcd_message("insert");
-    
+        _delay_ms(2000);
         if(one_pressed == 0){   // '1' isn't pressed
          
             for(int i=0; i<10; i++){
@@ -191,13 +193,23 @@ int main(){
         }
         
             
-        
-        //payload=configure(status);
-        //lcd_command(0xC0); //print in second line
-        lcd_message(status);
+         
+      
+        lcd_clear_display();
+        lcd_twice_float(temperature,pressure);
+        lcd_message_new_line(status);
         _delay_ms(2000);
         
+        configure(status);
+        if ( conversation(payload, buffer, BUF_SIZE, "\"Success\"") ) lcd_message("PAYLOAD Success");
+        else lcd_message("PAYLOAD Failure");
     
+        _delay_ms(3000);    // wait for the message to be seen
+        
+        if ( conversation("ESP:transmit", buffer, BUF_SIZE, "\"200 OK\"") ) lcd_message("TRANSMIT Success");
+        else lcd_message("TRANSMIT Failure");
+    
+         _delay_ms(3000);    // wait for the message to be seen
         
 }
 return 0;
