@@ -245,3 +245,76 @@ void lcd_message(char *message){
     }
 }
 
+void lcd_twice_float(float t, float p){
+
+
+    lcd_data('T');
+    lcd_data(':');
+    
+    // + or - in lcd and get absolute value in x
+    if(t < 0) {lcd_data('-') ; t = -t;}
+    else lcd_data('+');
+    
+    int a,b,c,d,e,f,g; // number format: abc.defg
+
+    // x integer and decimal part
+    int x_i = (int)t;
+    int x_d = (int)(10000*(t - x_i));
+
+    a = x_i/100;            // hundreds;
+    b = (x_i%100)/10;       // decades
+    c = x_i%10;             // units
+    d = x_d/1000;           // first decimal 
+    e = (x_d%1000)/100;     // second
+
+
+    if(a==0 && b==0) ;
+    else {
+            if(a!=0) lcd_data(a | 0b00110000);
+            lcd_data(b | 0b00110000);
+    }
+    
+    lcd_data(c | 0b00110000);
+    lcd_data('.');
+    lcd_data(d | 0b00110000);
+    lcd_data(e | 0b00110000);
+    lcd_data(' ');
+
+    lcd_data('P');
+    lcd_data(':');
+
+    
+    if(p < 0) {lcd_data('-') ; p = -p;}
+    else lcd_data('+');
+    
+    // x integer and decimal part
+    x_i = (int)p;
+     x_d = (int)(10000*(p - x_i));
+
+    a = x_i/100;            // hundreds;
+    b = (x_i%100)/10;       // decades
+    c = x_i%10;             // units
+    d = x_d/1000;           // first decimal 
+    e = (x_d%1000)/100;     // second
+
+
+    if(a==0 && b==0) ;
+    else {
+            if(a!=0) lcd_data(a | 0b00110000);
+            lcd_data(b | 0b00110000);
+    }
+    
+    lcd_data(c | 0b00110000);
+    lcd_data('.');
+    lcd_data(d | 0b00110000);
+    lcd_data(e | 0b00110000);
+       // dot // lcd_data(0b00101110);           // code for dot '.'
+
+
+}
+void lcd_message_new_line(char *message){
+    lcd_command(0xc0);    // clear screen
+    for(int i=0; i<strlen(message); i++){    // send the message
+        lcd_data(message[i]);
+    }
+}
