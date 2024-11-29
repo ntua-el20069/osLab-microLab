@@ -62,6 +62,7 @@ int main(){
     DDRB = 0xFF; // port B output for check
     twi_init();
     PCA9555_0_write(REG_CONFIGURATION_0,0x00); //output
+     PCA9555_0_write(REG_CONFIGURATION_1, 0xF0); // IO1_4 -> IO1_7 as input pins, IO1_0 -> IO1_3 as output ports
     lcd_init();
     adc_init();
     usart_init(UBRR);
@@ -126,9 +127,10 @@ int main(){
         
         
         //here starts the code i added
-        
-     
-       if(one_pressed == 0){   // '1' isn't pressed
+        PORTB=0b11110000;
+        lcd_message("insert");
+    
+        if(one_pressed == 0){   // '1' isn't pressed
          
             for(int i=0; i<10; i++){
         
@@ -190,15 +192,13 @@ int main(){
         
             
         
-        payload=configure(status);
-        lcd_command(0xC0); //print in second line
+        //payload=configure(status);
+        //lcd_command(0xC0); //print in second line
         lcd_message(status);
         _delay_ms(2000);
         
     
         
 }
-       
-    
 return 0;
 }
