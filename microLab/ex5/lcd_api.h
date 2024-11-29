@@ -75,9 +75,10 @@ int write_2_nibbles(int a);
 int lcd_clear_display();
 
 void display_float(float x);
+void lcd_twice_float(float t, float p);
 
 void lcd_message(char *message);
-
+void lcd_message_new_line(char *message);
 
 #ifdef	__cplusplus
 extern "C" {
