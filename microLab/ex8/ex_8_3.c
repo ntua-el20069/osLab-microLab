@@ -1,5 +1,5 @@
 #define F_CPU 16000000UL
-#define TEMP_INCREMENT 15
+#define TEMP_INCREMENT 12
 #include <util/delay.h>
 #include "avr/io.h"
 #include <string.h>
@@ -147,7 +147,7 @@ int main(){
             _delay_ms(100);
             }
             
-            if(one_pressed == 0 ) status="OK";  // '1' isn't pressed
+            if(one_pressed == 0 ) status=check();  // '1' isn't pressed
             
             else {  //one_pressed
                 
@@ -214,6 +214,3 @@ int main(){
 }
 return 0;
 }
-
-
-
