@@ -767,15 +767,33 @@ static int __init init_ext2_fs(void)
 	/* Register ext2-lite filesystem in the kernel */
 	/* If an error occurs remember to call destroy_inodecache() */
 	/* ? */
+// Register the ext2 filesystem
+    err = register_filesystem(&ext2_fs_type);
+    if (err) {
+        printk(KERN_ERR "ext2: failed to register filesystem\n");
+        destroy_inodecache(); // Cleanup inode cache if registration fails
+        return err;
+    }
 
-	return err;
+    printk(KERN_INFO "ext2: filesystem successfully loaded\n");
+    return 0;
+
+	
 }
 
 static void __exit exit_ext2_fs(void)
 {
 	/* Unregister ext2-lite filesystem from the kernel */
 	/* ? */
+int err=unregister_filesystem(&ext2_fs_type);
 
+	    if(err){
+
+       printk(KERN_INFO "ext2: Error in filesystem unregister. Exit failed.\n");
+    
+	    return 0;
+
+		}
 	destroy_inodecache();
 }
 
