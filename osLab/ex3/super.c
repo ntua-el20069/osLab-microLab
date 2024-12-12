@@ -791,10 +791,11 @@ int err=unregister_filesystem(&ext2_fs_type);
 
        printk(KERN_INFO "ext2: Error in filesystem unregister. Exit failed.\n");
     
-	    return 0;
+	
 
 		}
-	destroy_inodecache();
+	else{
+	destroy_inodecache();}
 }
 
 MODULE_AUTHOR("ADD YOUR NAME HERE"); /* ? */
