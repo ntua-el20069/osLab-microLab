@@ -288,6 +288,16 @@ ext2_dirent *ext2_find_entry(struct inode *dir, const struct qstr *child,
 
 		folio_release_kmap(folio, kaddr);
 		
+		}
+
+
+	out:
+	return ERR_PTR(-ENOENT);
+
+	found:
+	*foliop=folio;
+	folio_release_kmap(folio, kaddr);
+	return de
 }
 
 ext2_dirent *ext2_dotdot(struct inode *dir, struct folio **foliop)
