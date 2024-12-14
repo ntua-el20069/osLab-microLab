@@ -296,7 +296,6 @@ ext2_dirent *ext2_find_entry(struct inode *dir, const struct qstr *child,
 
 	found:
 	*foliop=folio;
-	folio_release_kmap(folio, kaddr);
 	return de;
 }
 
