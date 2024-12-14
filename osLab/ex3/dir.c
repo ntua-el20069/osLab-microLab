@@ -252,20 +252,42 @@ ext2_dirent *ext2_find_entry(struct inode *dir, const struct qstr *child,
 {
 	const char *name = child->name;
 	int namelen = child->len;
-	unsigned reclen = EXT2_DIR_REC_LEN(namelen);
+	unsigned reclen = EXT2_DIR_REC_LEN(namelen); //size of entry structure
 	unsigned long npages = dir_pages(dir);
-	unsigned long i;
+	unsigned long last_byte,i;
 	ext2_dirent *de;
 	char *kaddr;
+	struct folio *folio;
 
-	if (npages == 0)
-		return ERR_PTR(-ENOENT);
+   if (npages == 0)
+		goto out;
 
 	/* Scan all the pages of the directory to find the requested name. */
 	for (i=0; i < npages; i++) {
 		/* ? */
-	}
-	return ERR_PTR(-ENOENT);
+
+		kaddr = ext2_get_folio(dir, i, 0, &folio); //address of i-th page
+		if (IS_ERR(kaddr))
+			return ERR_CAST(kaddr);
+
+		
+		
+
+		de = (ext2_dirent *)kaddr;
+		
+		last_byte=ext2_last_byte(dir,i);
+               
+		while ((char *)de < kaddr + last_byte-reclen) {
+
+		    if(ext2_match(namelen,name,de)) goto found; //if name == de->name
+                        
+			de=ext2_next_entry(de);
+
+			  }
+			  
+
+		folio_release_kmap(folio, kaddr);
+		
 }
 
 ext2_dirent *ext2_dotdot(struct inode *dir, struct folio **foliop)
