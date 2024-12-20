@@ -318,9 +318,50 @@ static int ext2_allocate_in_bg(struct super_block *sb, int group,
 	ext2_fsblk_t group_last_block = ext2_group_last_block_no(sb, group);
 	ext2_grpblk_t nblocks = group_last_block - group_first_block + 1;
 	ext2_grpblk_t first_free_bit;
-	unsigned long num;
+	ext2_grpblk_t start = 0, grp_goal = -1;
+	unsigned long num = 0;
 
 	/* ? */
+
+	// grp_goal = find_next_usable_block(start, bitmap_bh, nblocks);
+	// I replaced the above line with this line
+	// Find the first usable (free - 0 in bitmap) block using find_next_zero_bit_le
+	grp_goal = find_next_zero_bit_le((unsigned long *)bitmap_bh->b_data, nblocks, 0);
+	if (grp_goal >= nblocks)
+    	goto fail_access;
+	
+	// I omit this part
+	// It threw error in ext2_test_bit function
+	// Omitting this part might result in slightly more fragmented file data
+	// Attempt to shift allocation goal backward for contiguous allocation
+	/*int i;
+	for (i = 0; i < 7 && grp_goal > start &&
+			!ext2_test_bit(grp_goal - 1,
+						bitmap_bh->b_data);
+				i++, grp_goal--)
+		;
+	*/
+	
+	// Allocate blocks starting from grp_goal
+	for (; num < *count && grp_goal < nblocks; grp_goal++) {
+		if (ext2_set_bit_atomic(sb_bgl_lock(EXT2_SB(sb), group),
+					grp_goal, bitmap_bh->b_data)) {
+			if (num == 0)
+				continue;
+			break;
+		}
+		num++;
+	}
+
+	// handle failure if no blocks were allocated
+	if (num == 0)
+		goto fail_access;
+
+	// Update the count of allocated blocks and return the group offset of the first allocated block
+	*count = num;
+	return grp_goal - num;
+	
+fail_access:
 	return -1;
 }
 
