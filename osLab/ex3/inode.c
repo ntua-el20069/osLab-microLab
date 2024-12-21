@@ -297,8 +297,7 @@ void ext2_set_inode_flags(struct inode *inode)
 }
 
 struct inode *ext2_iget(struct super_block *sb, unsigned long ino)
-{
-	struct ext2_inode_info *ei;
+{struct ext2_inode_info *ei;
 	struct buffer_head *bh = NULL;
 	struct ext2_inode *raw_inode;
 	struct inode *inode;
@@ -322,6 +321,7 @@ struct inode *ext2_iget(struct super_block *sb, unsigned long ino)
 	/*
 	 * Read the EXT2 inode *from disk*
 	 */
+
 	raw_inode = ext2_get_inode(inode->i_sb, ino, &bh);
 	if (IS_ERR(raw_inode)) {
 		ret = PTR_ERR(raw_inode);
@@ -333,6 +333,7 @@ struct inode *ext2_iget(struct super_block *sb, unsigned long ino)
 	/*
 	 * Fill the necessary fields of the VFS inode structure.
 	 */
+	
 	inode->i_mode = le16_to_cpu(raw_inode->i_mode);
 	i_uid_write(inode, (uid_t)le16_to_cpu(raw_inode->i_uid));
 	i_gid_write(inode, (gid_t)le16_to_cpu(raw_inode->i_gid));
@@ -352,8 +353,15 @@ struct inode *ext2_iget(struct super_block *sb, unsigned long ino)
 	//> Setup the {inode,file}_operations structures depending on the type.
 	if (S_ISREG(inode->i_mode)) {
 		/* ? */
+           	inode->i_op = &ext2_file_inode_operations;
+	       inode->i_fop = &ext2_file_operations;
+           inode->i_mapping->a_ops = &ext2_aops;
 	} else if (S_ISDIR(inode->i_mode)) {
 		/* ? */
+		inode->i_op = &ext2_dir_inode_operations;
+		inode->i_fop = &ext2_dir_operations;
+		inode->i_mapping->a_ops = &ext2_aops;
+
 	} else if (S_ISLNK(inode->i_mode)) {
 		if (ext2_inode_is_fast_symlink(inode)) {
 			inode->i_op = &simple_symlink_inode_operations;
@@ -377,6 +385,7 @@ struct inode *ext2_iget(struct super_block *sb, unsigned long ino)
 	/*
 	 * Fill the necessary fields of the ext2_inode_info structure.
 	 */
+	
 	ei = EXT2_I(inode);
 	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
 	ei->i_flags = le32_to_cpu(raw_inode->i_flags);
@@ -384,6 +393,8 @@ struct inode *ext2_iget(struct super_block *sb, unsigned long ino)
 	ei->i_dtime = 0;
 	ei->i_state = 0;
 	ei->i_block_group = (ino - 1) / EXT2_INODES_PER_GROUP(inode->i_sb);
+
+
 	//> NOTE! The in-memory inode i_data array is in little-endian order
 	//> even on big-endian machines: we do NOT byteswap the block numbers!
 	for (n = 0; n < EXT2_N_BLOCKS; n++)
