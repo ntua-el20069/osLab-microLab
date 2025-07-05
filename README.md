@@ -33,5 +33,5 @@ Refer to the individual lab directories for specific exercises and implementatio
 8. **IoT System**: Wireless patient monitoring with ESP8266, UART and Wifi communication, and web server integration 
 
 ## Contributors
-1. Filothei Linardatou
-2. Nikolaos Papakonstantopoulos
+- Filothei Linardatou
+- Nikolaos Papakonstantopoulos
