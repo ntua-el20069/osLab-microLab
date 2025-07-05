@@ -31,3 +31,7 @@ Refer to the individual lab directories for specific exercises and implementatio
 6. **Keypad**: Matrix scanning with debouncing and electronic lock  
 7. **1-Wire**: DS1820 temperature sensor communication protocol  
 8. **IoT System**: Wireless patient monitoring with ESP8266, UART and Wifi communication, and web server integration 
+
+## Contributors
+1. Filothei Linardatou
+2. Nikolaos Papakonstantopoulos
